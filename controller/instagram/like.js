@@ -17,9 +17,16 @@ async function like_instagram_worker(req, res) {
       type: QueryTypes.SELECT
     })
 
+    let countSucces = 0
+
 
     for (const user of findUsers) {
       const puppeteerLink = await openBrowser(user.user_id)
+
+      if (puppeteerLink.user_id) {
+        await storeData(puppeteerLink.message, puppeteerLink.user_id, userStatus.failed)
+        res.status(400).json(global_response("FAILED", 400, puppeteerLink.message));
+      }
 
       const browser = await puppeteer.connect({ browserWSEndpoint: puppeteerLink, defaultViewport: false })
 
@@ -35,23 +42,19 @@ async function like_instagram_worker(req, res) {
 
         let elementToClick
 
-        
+
         try {
           elementToClick = await page.waitForSelector('div._aagw', { timeout: 10000 })
         } catch (error) {
           await storeData("error wait selector", user.user_id, userStatus.failed)
           await browser.close()
         }
-        
+
         if (elementToClick) {
-          const resultClick = await page.click('div._aagw', { clickCount: 2 });
-          console.log(resultClick, "isi result click")
-          if (!resultClick) {
-            await storeData("error click selector", user.user_id, userStatus.failed)
-            await browser.close()
-          }
+          await page.click('div._aagw', { clickCount: 2 });
 
           setTimeout(async () => {
+            countSucces += 1
             await browser.close()
           }, 20000)
         }
@@ -60,10 +63,11 @@ async function like_instagram_worker(req, res) {
       await storeData("-", user.user_id, userStatus.success)
     }
 
+
     res.status(200).json(global_response("SUCCESS", 200, { message: "sukses" }));
 
   } catch (error) {
-    res.status(200).json(global_response("FAILED", 400, error.toString()));
+    res.status(400).json(global_response("FAILED", 400, error.toString()));
   }
 }
 

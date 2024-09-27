@@ -12,6 +12,11 @@ async function openBrowser(user_id) {
             }
         )
 
+        if (data.code === -1) {
+            throw new Error(data.msg)
+        }
+
+
         const puppeteerLink = data.data.ws.puppeteer
 
         return puppeteerLink
