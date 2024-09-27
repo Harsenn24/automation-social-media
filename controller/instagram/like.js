@@ -3,6 +3,8 @@ const { QueryTypes } = require("sequelize");
 const global_response = require("../../response/global.response");
 const openBrowser = require("../../helpers/open-browser.helper");
 const puppeteer = require("puppeteer");
+const storeData = require("../../helpers/store-data-success-error.helper");
+const userStatus = require("../../enums/user-status.enum");
 
 async function like_instagram_worker(req, res) {
   try {
@@ -19,7 +21,7 @@ async function like_instagram_worker(req, res) {
     for (const user of findUsers) {
       const puppeteerLink = await openBrowser(user.user_id)
 
-      const browser = await puppeteer.connect({ browserWSEndpoint: puppeteerLink, defaultViewport : false })
+      const browser = await puppeteer.connect({ browserWSEndpoint: puppeteerLink, defaultViewport: false })
 
       const pages = await browser.pages(0)
 
@@ -28,22 +30,40 @@ async function like_instagram_worker(req, res) {
       page.goto(link)
 
       setTimeout(async () => {
-        const viewBoxValue = await page.$eval('svg.x1lliihq.x1n2onr6.xxk16z8', svg => svg.getAttribute('viewBox'));
-        
-        if(viewBoxValue === "0 0 24 24") {
-          console.log(true)
-        } else {
-          console.log(false)
-        }
-      }, 8000);
-    }
 
+        await page.reload()
+
+        let elementToClick
+
+        
+        try {
+          elementToClick = await page.waitForSelector('div._aagw', { timeout: 10000 })
+        } catch (error) {
+          await storeData("error wait selector", user.user_id, userStatus.failed)
+          await browser.close()
+        }
+        
+        if (elementToClick) {
+          const resultClick = await page.click('div._aagw', { clickCount: 2 });
+          console.log(resultClick, "isi result click")
+          if (!resultClick) {
+            await storeData("error click selector", user.user_id, userStatus.failed)
+            await browser.close()
+          }
+
+          setTimeout(async () => {
+            await browser.close()
+          }, 20000)
+        }
+      }, 10000);
+
+      await storeData("-", user.user_id, userStatus.success)
+    }
 
     res.status(200).json(global_response("SUCCESS", 200, { message: "sukses" }));
 
   } catch (error) {
-    console.log(error)
-    res.status(400).json(global_response("FAILED", 400, error.toString()));
+    res.status(200).json(global_response("FAILED", 400, error.toString()));
   }
 }
 

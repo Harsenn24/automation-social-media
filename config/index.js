@@ -14,7 +14,7 @@ const config = {
         idle: process.env.NODE_DB_POOL_IDLE || 20000
     }
 };
-const sequelize = new Sequelize(config.dbName, config.dbUser, config.dbPassword, {
+const dbSosmed = new Sequelize(config.dbName, config.dbUser, config.dbPassword, {
     host: config.dbHost,
     dialect: config.dbDialect,
     logging: false,
@@ -23,5 +23,5 @@ const sequelize = new Sequelize(config.dbName, config.dbUser, config.dbPassword,
     timezone: '+00:00'
 });
 
-module.exports = sequelize;
+module.exports = dbSosmed;
 
