@@ -6,7 +6,7 @@ const puppeteer = require("puppeteer");
 const storeData = require("../../helpers/store-data-success-error.helper");
 const userStatus = require("../../enums/user-status.enum");
 
-async function like_instagram_worker(req, res) {
+async function reels_view(req, res) {
   try {
 
     const { link } = req.body
@@ -16,9 +16,6 @@ async function like_instagram_worker(req, res) {
       `, {
       type: QueryTypes.SELECT
     })
-
-    let countSucces = 0
-
 
     for (const user of findUsers) {
       const puppeteerLink = await openBrowser(user.user_id)
@@ -40,24 +37,10 @@ async function like_instagram_worker(req, res) {
 
         await page.reload()
 
-        let elementToClick
-
-
-        try {
-          elementToClick = await page.waitForSelector('div._aagw', { timeout: 10000 })
-        } catch (error) {
-          await storeData("error wait selector", user.user_id, userStatus.failed)
-          await browser.close()
-        }
-
-        if (elementToClick) {
-          await page.click('div._aagw', { clickCount: 2 });
-
           setTimeout(async () => {
-            countSucces += 1
             await browser.close()
           }, 20000)
-        }
+        
       }, 10000);
 
       await storeData("-", user.user_id, userStatus.success)
@@ -71,4 +54,4 @@ async function like_instagram_worker(req, res) {
   }
 }
 
-module.exports = like_instagram_worker;
+module.exports = reels_view;
