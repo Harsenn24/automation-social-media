@@ -4,7 +4,7 @@ const userModel = require("../models/user-data.model");
 const createTimeStamp = require("./create-timestamp.helper");
 
 
-async function storeData(message, user_id, status) {
+async function storeData(message, user_id, status, active) {
 
     try {
         const [findData] = await sequelize.query(`
@@ -24,7 +24,8 @@ async function storeData(message, user_id, status) {
                 {
                     running: status,
                     detail: message,
-                    updatedAt: createTimeStamp()
+                    updatedAt: createTimeStamp(),
+                    active
                 },
                 {
                     where: {
@@ -41,7 +42,8 @@ async function storeData(message, user_id, status) {
                     running: status,
                     detail: message,
                     updatedAt: createTimeStamp(),
-                    createdAt: createTimeStamp()
+                    createdAt: createTimeStamp(),
+                    active
                 }
             )
         }

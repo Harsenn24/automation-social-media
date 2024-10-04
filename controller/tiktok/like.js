@@ -1,23 +1,15 @@
-const sequelize = require("../../config");
-const { QueryTypes } = require("sequelize");
 const global_response = require("../../response/global.response");
 const openBrowser = require("../../helpers/open-browser.helper");
 const puppeteer = require("puppeteer");
 const storeData = require("../../helpers/store-data-success-error.helper");
 const userStatus = require("../../enums/user-status.enum");
+const queryFindUser = require("../../helpers/query-find-user.helper");
 
 async function like_tiktok(req, res) {
   try {
     const { link } = req.body;
 
-    const findUsers = await sequelize.query(
-      `
-      select u.user_id from users u
-      `,
-      {
-        type: QueryTypes.SELECT,
-      }
-    );
+    const findUsers = await queryFindUser()
 
     for (const user of findUsers) {
       const puppeteerLink = await openBrowser(user.user_id);
@@ -26,7 +18,9 @@ async function like_tiktok(req, res) {
         await storeData(
           puppeteerLink.message,
           puppeteerLink.user_id,
-          userStatus.failed
+          userStatus.failed,
+          userStatus.inactive
+          
         );
         res
           .status(400)
@@ -45,7 +39,17 @@ async function like_tiktok(req, res) {
       page.goto(link);
 
       setTimeout(async () => {
-        await page.reload();
+        try {
+          await page.reload();
+        } catch (error) {
+          await storeData(
+            "error refresh tiktok like",
+            user.user_id,
+            userStatus.failed,
+            userStatus.inactive
+          );
+          await browser.close();
+        }
 
         let elementToClick;
 
@@ -55,7 +59,8 @@ async function like_tiktok(req, res) {
           await storeData(
             "error wait selector",
             user.user_id,
-            userStatus.failed
+            userStatus.failed,
+            userStatus.inactive
           );
           await browser.close();
         }
@@ -63,8 +68,23 @@ async function like_tiktok(req, res) {
         if (elementToClick) {
           try {
             const videoElement = await page.$("video");
-            await videoElement.click();
-            await videoElement.click();
+
+            try {
+              setTimeout(async () => {
+                await videoElement.click();
+                await videoElement.click();
+              }, 10000);
+              
+            } catch (error) {
+              await storeData(
+                "error double click",
+                user.user_id,
+                userStatus.failed,
+                userStatus.inactive
+              );
+              await browser.close();
+            }
+
 
             setTimeout(async () => {
               await browser.close();
@@ -73,14 +93,15 @@ async function like_tiktok(req, res) {
             await storeData(
               "error waiting video css",
               user.user_id,
-              userStatus.failed
+              userStatus.failed,
+              userStatus.inactive
             );
             await browser.close();
           }
         }
       }, 10000);
 
-      await storeData("-", user.user_id, userStatus.success);
+      await storeData("-", user.user_id, userStatus.success, userStatus.active);
     }
 
     res
