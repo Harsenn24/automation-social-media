@@ -4,7 +4,7 @@ const config = {
     dbHost: process.env.NODE_DB_HOST || '127.0.0.1',
     dbUser: process.env.NODE_DB_USER || 'root',
     dbName: process.env.NODE_DB_DATABASE || 'user_id_adspower',
-    dbPassword: process.env.NODE_DB_PASSWORD || 'H@rsennayet19',
+    dbPassword: process.env.NODE_DB_PASSWORD,
     dbPort: process.env.NODE_DB_PORT,
     dbDialect: process.env.NODE_DB_DIALECT || "mysql",
     pool: {
