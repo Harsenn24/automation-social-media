@@ -5,11 +5,11 @@ const storeData = require("../../helpers/store-data-success-error.helper");
 const userStatus = require("../../enums/user-status.enum");
 const queryFindUser = require("../../helpers/query-find-user.helper");
 
-async function view_tiktok(req, res) {
+async function like_instagram(req, res) {
   try {
     const { link } = req.body;
 
-    const findUsers = await queryFindUser()
+    const findUsers = await queryFindUser();
 
     for (const user of findUsers) {
       const puppeteerLink = await openBrowser(user.user_id);
@@ -17,43 +17,57 @@ async function view_tiktok(req, res) {
       if (puppeteerLink.user_id) {
         await storeData(
           puppeteerLink.message,
-          puppeteerLink.user_id,
+          user.user_id,
           userStatus.failed,
           userStatus.inactive
         );
-        res
+        return res
           .status(400)
           .json(global_response("FAILED", 400, puppeteerLink.message));
       }
 
       const browser = await puppeteer.connect({
         browserWSEndpoint: puppeteerLink,
-        defaultViewport: false,
+        defaultViewport: null,
       });
 
-      const pages = await browser.pages(0);
+      try {
+        const [page] = await browser.pages();
 
-      const page = pages[0];
+        await page.goto(link, { waitUntil: 'networkidle2' });
 
-      page.goto(link);
-
-      setTimeout(async () => {
         await page.reload();
 
-        setTimeout(async () => {
-          await browser.close()
-        }, 30000)
-      }, 10000);
+        const videoElement = await page.waitForSelector('svg[aria-label="Suka"]', { timeout: 10000 });
+        
+        if (videoElement) {
 
-      await storeData("-", user.user_id, userStatus.success, userStatus.active);
+          const likeButton = await page.$('svg[aria-label="Suka"]');
+
+          likeButton.click()
+          await storeData("-", user.user_id, userStatus.success, userStatus.active);
+        } else {
+          await browser.close();
+        }
+
+      } catch (error) {
+        await storeData(
+          error.message || "Error during TikTok like",
+          user.user_id,
+          userStatus.failed,
+          userStatus.inactive
+        );
+      } finally {
+        setTimeout(async () => {
+          await browser.close();
+        }, 6000);
+      }
     }
 
-    res
-      .status(200)
-      .json(global_response("SUCCESS", 200, { message: "sukses" }));
+    res.status(200).json(global_response("SUCCESS", 200, { message: "sukses" }));
   } catch (error) {
     res.status(400).json(global_response("FAILED", 400, error.toString()));
   }
 }
 
-module.exports = view_tiktok;
+module.exports = like_instagram;

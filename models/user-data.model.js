@@ -22,6 +22,10 @@ const userModel = dbSosmed.define(
             allowNull: true,
             type: DataTypes.TEXT,
         },
+        active: {
+            allowNull: false,
+            type: DataTypes.TINYINT,
+        },
         createdAt: {
             allowNull: false,
             type: DataTypes.BIGINT.UNSIGNED,
