@@ -9,104 +9,63 @@ async function like_tiktok(req, res) {
   try {
     const { link } = req.body;
 
-    const findUsers = await queryFindUser()
+    const findUsers = await queryFindUser();
 
-    for (const user of findUsers) {
-      const puppeteerLink = await openBrowser(user.user_id);
+    // for (const user of findUsers) {
+    //   const puppeteerLink = await openBrowser(user.user_id);
 
-      if (puppeteerLink.user_id) {
-        await storeData(
-          puppeteerLink.message,
-          puppeteerLink.user_id,
-          userStatus.failed,
-          userStatus.inactive
-          
-        );
-        res
-          .status(400)
-          .json(global_response("FAILED", 400, puppeteerLink.message));
-      }
+    //   if (puppeteerLink.user_id) {
+    //     await storeData(
+    //       puppeteerLink.message,
+    //       user.user_id,
+    //       userStatus.failed,
+    //       userStatus.inactive
+    //     );
+    //     return res
+    //       .status(400)
+    //       .json(global_response("FAILED", 400, puppeteerLink.message));
+    //   }
 
-      const browser = await puppeteer.connect({
-        browserWSEndpoint: puppeteerLink,
-        defaultViewport: false,
-      });
+    //   const browser = await puppeteer.connect({
+    //     browserWSEndpoint: puppeteerLink,
+    //     defaultViewport: null,
+    //   });
 
-      const pages = await browser.pages(0);
+    //   try {
+    //     const [page] = await browser.pages();
 
-      const page = pages[0];
+    //     await page.goto(link, { waitUntil: 'networkidle2' });
 
-      page.goto(link);
+    //     await page.reload();
 
-      setTimeout(async () => {
-        try {
-          await page.reload();
-        } catch (error) {
-          await storeData(
-            "error refresh tiktok like",
-            user.user_id,
-            userStatus.failed,
-            userStatus.inactive
-          );
-          await browser.close();
-        }
+    //     const videoElement = await page.waitForSelector("video", { timeout: 10000 });
 
-        let elementToClick;
+    //     if (videoElement) {
+    //       const elementToClick = await page.$("video");
 
-        try {
-          elementToClick = await page.waitForSelector("video");
-        } catch (error) {
-          await storeData(
-            "error wait selector",
-            user.user_id,
-            userStatus.failed,
-            userStatus.inactive
-          );
-          await browser.close();
-        }
+    //       await elementToClick.click(); 
+    //       await elementToClick.click(); 
 
-        if (elementToClick) {
-          try {
-            const videoElement = await page.$("video");
+    //       await storeData("-", user.user_id, userStatus.success, userStatus.active);
+    //     } else {
+    //       throw new Error("Video element not found");
+    //     }
 
-            try {
-              setTimeout(async () => {
-                await videoElement.click();
-                await videoElement.click();
-              }, 10000);
-              
-            } catch (error) {
-              await storeData(
-                "error double click",
-                user.user_id,
-                userStatus.failed,
-                userStatus.inactive
-              );
-              await browser.close();
-            }
+    //   } catch (error) {
+    //     await storeData(
+    //       error.message || "Error during TikTok like",
+    //       user.user_id,
+    //       userStatus.failed,
+    //       userStatus.inactive
+    //     );
+    //   } finally {
+    //     setTimeout(async () => {
+    //         await browser.close();
+    //     }, 6000);
+    //   }
+    // }
 
-
-            setTimeout(async () => {
-              await browser.close();
-            }, 20000);
-          } catch (error) {
-            await storeData(
-              "error waiting video css",
-              user.user_id,
-              userStatus.failed,
-              userStatus.inactive
-            );
-            await browser.close();
-          }
-        }
-      }, 10000);
-
-      await storeData("-", user.user_id, userStatus.success, userStatus.active);
-    }
-
-    res
-      .status(200)
-      .json(global_response("SUCCESS", 200, { message: "sukses" }));
+    res.status(200).json(global_response("SUCCESS", 200, { message: "sukses" }));
   } catch (error) {
     res.status(400).json(global_response("FAILED", 400, error.toString()));
   }
