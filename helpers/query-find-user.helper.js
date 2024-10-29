@@ -1,8 +1,6 @@
 const { QueryTypes } = require("sequelize");
 const sequelize = require("../config/index");
 
-const offsetLimit = `LIMIT 1000 OFFSET 256`
-
 async function queryFindUser() {
 
     const findUserNotActive = await sequelize.query(`
