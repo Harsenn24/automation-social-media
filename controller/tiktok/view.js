@@ -40,9 +40,38 @@ async function view_tiktok(req, res) {
       setTimeout(async () => {
         await page.reload();
 
+        const videoElement = await page.waitForSelector("video", { timeout: 10000 });
+
+        if (videoElement) {
+          const elementToClick = await page.$("video");
+
+          await elementToClick.click(); 
+
+
+          setTimeout(async () => {
+            await elementToClick.click(); 
+          }, 10000)
+
+
+          setTimeout(async () => {
+            await elementToClick.click(); 
+          }, 10000)
+
+
+          setTimeout(async () => {
+            await elementToClick.click(); 
+          }, 10000)
+
+          await storeData("-", user.user_id, userStatus.success, userStatus.active);
+        } else {
+          await browser.close()
+          throw new Error("Video element not found");
+        }
+
         setTimeout(async () => {
           await browser.close()
         }, 30000)
+
       }, 10000);
 
       await storeData("-", user.user_id, userStatus.success, userStatus.active);
