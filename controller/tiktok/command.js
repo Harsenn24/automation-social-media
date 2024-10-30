@@ -9,81 +9,78 @@ const fs = require('fs');
 async function comment_tiktok(req, res) {
     try {
         const { link } = req.body;
-
-        const findUsers = await queryFindUser()
-
-        const commentJson = JSON.parse(fs.readFileSync("./json/comment.json"))
+        const findUsers = await queryFindUser();
+        const commentJson = JSON.parse(fs.readFileSync("./json/comment.json"));
 
         for (const user of findUsers) {
-            const puppeteerLink = await openBrowser(user.user_id);
+            try {
+                const puppeteerLink = await openBrowser(user.user_id);
 
-            if (puppeteerLink.user_id) {
-                await storeData(
-                    puppeteerLink.message,
-                    puppeteerLink.user_id,
-                    userStatus.failed,
-                    userStatus.inactive
-                );
-                res
-                    .status(400)
-                    .json(global_response("FAILED", 400, puppeteerLink.message));
-            }
+                if (puppeteerLink.user_id) {
+                    await storeData(
+                        puppeteerLink.message,
+                        puppeteerLink.user_id,
+                        userStatus.failed,
+                        userStatus.inactive
+                    );
+                    continue;
+                }
 
-            const browser = await puppeteer.connect({
-                browserWSEndpoint: puppeteerLink,
-                defaultViewport: false,
-            });
+                const browser = await puppeteer.connect({
+                    browserWSEndpoint: puppeteerLink,
+                    defaultViewport: false,
+                });
 
-            const pages = await browser.pages(0);
+                const pages = await browser.pages();
+                const page = pages[0] || await browser.newPage();
 
-            const page = pages[0];
+                await page.goto(link, { timeout: 60000 });
 
-            page.goto(link);
+                const MAX_RETRIES = 3;
+                // let retries = 0;
+                let successProcess = false;
 
-            setTimeout(async () => {
-                await page.reload();
+                while (!successProcess) {
+                    try {
+                        await page.reload();
 
-                const element_comment = 'div[data-e2e="comment-text"]'
+                        const element_comment = 'div[data-e2e="comment-text"]';
+                        const textComment = await page.waitForSelector(element_comment, { visible: true });
 
-                setTimeout(async()=> {
-                    const textComment = await page.waitForSelector(element_comment, { timeout: 20000 });
-    
-                    if (textComment) {
-    
-                        await page.click(element_comment)
-    
-                        const randomIndex = Math.floor(Math.random() * commentJson.comments.length);
-    
-                        await page.type(
-                            element_comment,
-                            commentJson.comments[randomIndex]
-                        );
-    
-                        await page.keyboard.press("Enter");
-    
-                        await storeData("-", user.user_id, userStatus.success, userStatus.active);
-                    } else {
-                        await browser.close()
-                        throw new Error("Video element not found");
+                        if (textComment) {
+                            await textComment.click();
+                            const randomIndex = Math.floor(Math.random() * commentJson.comments.length);
+                            await page.type(element_comment, commentJson.comments[randomIndex]);
+                            await page.keyboard.press("Enter");
+
+                            await storeData("-", user.user_id, userStatus.success, userStatus.active);
+                            successProcess = true;
+                            console.log(`${user.user_id} success comment`)
+                        } else {
+                            throw new Error("Comment element not found");
+                        }
+                    } catch (commentError) {
+                        successProcess = true
+                        await storeData("Failed to comment", user.user_id, userStatus.failed, userStatus.inactive);
                     }
-                }, 15000)
 
+                }
 
                 setTimeout(async () => {
-                    await browser.close()
-                }, 30000)
+                    await browser.close();
+                }, 5000)
 
-            }, 10000);
-
-            await storeData("-", user.user_id, userStatus.success, userStatus.active);
+            } catch (userError) {
+                console.error(`Error for user ${user.user_id}:`, userError);
+            }
         }
 
-        res
-            .status(200)
-            .json(global_response("SUCCESS", 200, { message: "sukses" }));
+        res.status(200).json(global_response("SUCCESS", 200, { message: "All users processed" }));
     } catch (error) {
-        res.status(400).json(global_response("FAILED", 400, error.toString()));
+        console.log("Main error:", error);
+        res.status(500).json(global_response("FAILED", 500, error.toString()));
     }
 }
+
 
 module.exports = comment_tiktok;
