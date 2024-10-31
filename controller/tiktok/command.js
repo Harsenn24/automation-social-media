@@ -36,8 +36,6 @@ async function comment_tiktok(req, res) {
 
                 await page.goto(link, { timeout: 60000 });
 
-                const MAX_RETRIES = 3;
-                // let retries = 0;
                 let successProcess = false;
 
                 while (!successProcess) {
@@ -48,6 +46,7 @@ async function comment_tiktok(req, res) {
                         const textComment = await page.waitForSelector(element_comment, { visible: true });
 
                         if (textComment) {
+                            await page.keyboard.press("PageDown");
                             await textComment.click();
                             const randomIndex = Math.floor(Math.random() * commentJson.comments.length);
                             await page.type(element_comment, commentJson.comments[randomIndex]);
@@ -65,6 +64,7 @@ async function comment_tiktok(req, res) {
                     }
 
                 }
+
 
                 setTimeout(async () => {
                     await browser.close();
