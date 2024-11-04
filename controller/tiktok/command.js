@@ -32,22 +32,30 @@ async function comment_tiktok(req, res) {
                 });
 
                 const pages = await browser.pages();
-                const page = pages[0] || await browser.newPage();
 
-                await page.goto(link, { timeout: 60000 });
+                let page
 
+                if (pages.length > 1) {
+                    for (let i = 1; i < pages.length; i++) {
+                        await pages[i].close()
+                    }
+                    page = await browser.newPage();
+                } else {
+                    page = await browser.newPage();;
+                }
+
+                await page.goto(link, { waitUntil: "networkidle2", timeout: 60000 });
                 let successProcess = false;
 
                 while (!successProcess) {
                     try {
-                        await page.reload();
+
+                        await page.keyboard.press("PageDown", { delay: 3000 })
 
                         const element_comment = 'div[data-e2e="comment-text"]';
-                        const textComment = await page.waitForSelector(element_comment, { visible: true });
+                        const textComment = await page.waitForSelector(element_comment, { waitUntil: "networkidle2", timeout: 60000 });
 
                         if (textComment) {
-                            await page.keyboard.press("PageDown");
-                            await textComment.click();
                             const randomIndex = Math.floor(Math.random() * commentJson.comments.length);
                             await page.type(element_comment, commentJson.comments[randomIndex]);
                             await page.keyboard.press("Enter");
@@ -56,21 +64,22 @@ async function comment_tiktok(req, res) {
                             successProcess = true;
                             console.log(`${user.user_id} success comment`)
                         } else {
+                            successProcess = true;
                             throw new Error("Comment element not found");
                         }
                     } catch (commentError) {
                         successProcess = true
                         await storeData("Failed to comment", user.user_id, userStatus.failed, userStatus.inactive);
-                    }
+                    } finally {
+                        setTimeout(async () => {
+                            await browser.close();
+                        }, 5000)
 
+                    }
                 }
 
-
-                setTimeout(async () => {
-                    await browser.close();
-                }, 5000)
-
             } catch (userError) {
+                await storeData("Failed to comment", user.user_id, userStatus.failed, userStatus.inactive);
                 console.error(`Error for user ${user.user_id}:`, userError);
             }
         }
