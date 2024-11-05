@@ -73,13 +73,13 @@ async function like_tiktok(req, res) {
           } finally {
             setTimeout(async () => {
               await browser.close();
-            }, 5000)
+            }, 3000)
           }
         }
 
       } catch (error) {
         await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
-        console.error(`Error for user ${user.user_id}:`, userError);
+        console.error(`Error for user ${user.user_id}:`, error);
       }
 
     }
