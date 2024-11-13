@@ -12,6 +12,7 @@ async function like_tiktok(req, res) {
     const findUsers = await queryFindUser(active);
 
     for (const user of findUsers) {
+      let browser
       try {
         const puppeteerLink = await openBrowser(user.user_id);
 
@@ -27,7 +28,7 @@ async function like_tiktok(req, res) {
             .json(global_response("FAILED", 400, puppeteerLink.message));
         }
 
-        const browser = await puppeteer.connect({
+        browser = await puppeteer.connect({
           browserWSEndpoint: puppeteerLink,
           defaultViewport: null,
         });
@@ -78,6 +79,7 @@ async function like_tiktok(req, res) {
         }
 
       } catch (error) {
+        await browser.close()
         await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
         console.error(`Error for user ${user.user_id}:`, error);
       }
