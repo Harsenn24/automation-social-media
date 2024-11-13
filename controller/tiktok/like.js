@@ -7,9 +7,9 @@ const queryFindUser = require("../../helpers/query-find-user.helper");
 
 async function like_tiktok(req, res) {
   try {
-    const { link } = req.body;
+    const { link, active } = req.body;
 
-    const findUsers = await queryFindUser();
+    const findUsers = await queryFindUser(active);
 
     for (const user of findUsers) {
       try {
@@ -45,7 +45,7 @@ async function like_tiktok(req, res) {
           page = await browser.newPage();;
         }
 
-        await page.goto(link, { waitUntil: 'networkidle2', timeout: 60000 });
+        await page.goto(link);
 
         let successProcess = false
 
