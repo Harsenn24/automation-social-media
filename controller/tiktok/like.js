@@ -45,7 +45,7 @@ async function like_tiktok(req, res) {
           page = await browser.newPage();;
         }
 
-        await page.goto(link, { waitUntil: 'networkidle2', timeout: 60000 });
+        await page.goto(link);
 
         let successProcess = false
 
