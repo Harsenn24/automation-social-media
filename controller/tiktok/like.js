@@ -11,6 +11,12 @@ async function like_tiktok(req, res) {
 
     const findUsers = await queryFindUser(active);
 
+    const totalAccount = findUsers.length
+
+    let succes = 0
+
+    let failed = 0
+
     for (const user of findUsers) {
       let browser
       try {
@@ -62,6 +68,7 @@ async function like_tiktok(req, res) {
 
               await storeData("-", user.user_id, userStatus.success, userStatus.active);
               successProcess = true
+              succes++
               console.log(`${user.user_id} success like`)
             } else {
               successProcess = true
@@ -69,6 +76,7 @@ async function like_tiktok(req, res) {
             }
 
           } catch (likeError) {
+            failed++
             successProcess = true
             await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
           } finally {
@@ -79,12 +87,17 @@ async function like_tiktok(req, res) {
         }
 
       } catch (error) {
-        await browser.close()
+        // await browser.close()
+        failed++
         await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
         console.error(`Error for user ${user.user_id}:`, error);
       }
 
     }
+
+    console.log(`TOTAL DATA = ${totalAccount} akun`)
+    console.log(`TOTAL AKUN BERHASIL  = ${succes} akun`)
+    console.log(`TOTAL AKUN GAGAL  = ${failed} akun`)
 
     res.status(200).json(global_response("SUCCESS", 200, { message: "sukses" }));
   } catch (error) {
