@@ -6,17 +6,11 @@ const userStatus = require("../../enums/user-status.enum");
 const queryFindUser = require("../../helpers/query-find-user.helper");
 const fs = require('fs');
 
-async function comment_tiktok(req, res) {
+async function command_tiktok(req, res) {
     try {
         const { link, active } = req.body;
         const findUsers = await queryFindUser(active);
         const commentJson = JSON.parse(fs.readFileSync("./json/comment.json"));
-
-        const totalAccount = findUsers.length
-
-        let succes = 0
-
-        let failed = 0
 
         for (const user of findUsers) {
             try {
@@ -50,7 +44,7 @@ async function comment_tiktok(req, res) {
                     page = await browser.newPage();;
                 }
 
-                await page.goto(link, { waitUntil: "networkidle2", timeout: 60000 });
+                await page.goto(link, { waitUntil: "networkidle2" , timeout: 60000});
                 let successProcess = false;
 
                 while (!successProcess) {
@@ -69,13 +63,11 @@ async function comment_tiktok(req, res) {
                             await storeData("-", user.user_id, userStatus.success, userStatus.active);
                             successProcess = true;
                             console.log(`${user.user_id} success comment`)
-                            succes++
                         } else {
                             successProcess = true;
                             throw new Error("Comment element not found");
                         }
                     } catch (commentError) {
-                        failed++
                         successProcess = true
                         await storeData("Failed to comment", user.user_id, userStatus.failed, userStatus.inactive);
                     } finally {
@@ -87,15 +79,10 @@ async function comment_tiktok(req, res) {
                 }
 
             } catch (userError) {
-                failed++
                 await storeData("Failed to comment", user.user_id, userStatus.failed, userStatus.inactive);
                 console.error(`Error for user ${user.user_id}:`, userError);
             }
         }
-
-        console.log(`TOTAL DATA = ${totalAccount} akun`)
-        console.log(`TOTAL AKUN BERHASIL  = ${succes} akun`)
-        console.log(`TOTAL AKUN GAGAL  = ${failed} akun`)
 
         res.status(200).json(global_response("SUCCESS", 200, { message: "All users processed" }));
     } catch (error) {
@@ -105,4 +92,4 @@ async function comment_tiktok(req, res) {
 }
 
 
-module.exports = comment_tiktok;
+module.exports = command_tiktok;
