@@ -8,8 +8,8 @@ const fs = require('fs');
 
 async function comment_tiktok(req, res) {
     try {
-        const { link, active } = req.body;
-        const findUsers = await queryFindUser(active);
+        const { link } = req.body;
+        const findUsers = await queryFindUser();
         const commentJson = JSON.parse(fs.readFileSync("./json/comment.json"));
 
         const totalAccount = findUsers.length

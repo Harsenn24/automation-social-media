@@ -7,9 +7,9 @@ const queryFindUser = require("../../helpers/query-find-user.helper");
 
 async function like_tiktok(req, res) {
   try {
-    const { link, active } = req.body;
+    const { link } = req.body;
 
-    const findUsers = await queryFindUser(active);
+    const findUsers = await queryFindUser();
 
     for (const user of findUsers) {
       try {
@@ -22,9 +22,7 @@ async function like_tiktok(req, res) {
             userStatus.failed,
             userStatus.inactive
           );
-          return res
-            .status(400)
-            .json(global_response("FAILED", 400, puppeteerLink.message));
+          
         }
 
         const browser = await puppeteer.connect({
@@ -45,37 +43,35 @@ async function like_tiktok(req, res) {
           page = await browser.newPage();;
         }
 
-        await page.goto(link, { waitUntil: 'networkidle2', timeout: 60000 });
+        await page.goto(link);
 
-        let successProcess = false
-
-        while (!successProcess) {
+        setTimeout(async () => {
           try {
+            await page.reload()
             const videoElement = await page.waitForSelector("video", { timeout: 10000 });
-
+  
             if (videoElement) {
               const elementToClick = await page.$("video");
-
+  
               await elementToClick.click();
               await elementToClick.click();
-
+  
               await storeData("-", user.user_id, userStatus.success, userStatus.active);
-              successProcess = true
               console.log(`${user.user_id} success like`)
             } else {
-              successProcess = true
-              throw new Error("Video element not found");
+              console.log("error akun :" , user.user_id)
             }
-
-          } catch (likeError) {
-            successProcess = true
-            await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
-          } finally {
-            setTimeout(async () => {
-              await browser.close();
-            }, 3000)
+  
+            setTimeout(async() => {
+              await browser.close()
+            }, 5000);
+            
+          } catch (error) {
+            console.log(error, "error line 102")
+            await browser.close()
           }
-        }
+
+        }, 10000);
 
       } catch (error) {
         await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
