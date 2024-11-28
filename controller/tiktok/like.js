@@ -32,18 +32,18 @@ async function like_tiktok(req, res) {
 
         const pages = await browser.pages();
 
-        let page
+        let page;
 
         if (pages.length > 1) {
           for (let i = 1; i < pages.length; i++) {
-            await pages[i].close()
+            await pages[i].close();
           }
           page = await browser.newPage();
         } else {
-          page = await browser.newPage();;
+          page = await browser.newPage();
         }
 
-        await page.goto(link);
+        await page.goto(link, { waitUntil: "networkidle2", timeout: 60000 });
 
         setTimeout(async () => {
           try {
@@ -77,7 +77,6 @@ async function like_tiktok(req, res) {
         await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
         console.error(`Error for user ${user.user_id}:`, error);
       }
-
     }
 
     res.status(200).json(global_response("SUCCESS", 200, { message: "sukses" }));
