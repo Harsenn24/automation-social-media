@@ -7,20 +7,11 @@ const queryFindUser = require("../../helpers/query-find-user.helper");
 
 async function like_tiktok(req, res) {
   try {
-    const { link, active } = req.body;
+    const { link } = req.body;
 
-    const findUsers = await queryFindUser(active);
-    // const findUsers = [
-    //   {
-    //     user_id: "kneany1",
-    //   },
-    //   {
-    //     user_id: "kneb2uc",
-    //   },
-    // ];
+    const findUsers = await queryFindUser();
 
     for (const user of findUsers) {
-      let browser;
       try {
         const puppeteerLink = await openBrowser(user.user_id);
 
@@ -31,10 +22,10 @@ async function like_tiktok(req, res) {
             userStatus.failed,
             userStatus.inactive
           );
-          continue
+          
         }
 
-        browser = await puppeteer.connect({
+        const browser = await puppeteer.connect({
           browserWSEndpoint: puppeteerLink,
           defaultViewport: null,
         });
@@ -54,60 +45,41 @@ async function like_tiktok(req, res) {
 
         await page.goto(link, { waitUntil: "networkidle2", timeout: 60000 });
 
-        let successProcess = false;
-
-        while (!successProcess) {
+        setTimeout(async () => {
           try {
-            const videoElement = await page.waitForSelector("video", {
-              timeout: 10000,
-            });
-
+            await page.reload()
+            const videoElement = await page.waitForSelector("video", { timeout: 10000 });
+  
             if (videoElement) {
               const elementToClick = await page.$("video");
-
+  
               await elementToClick.click();
               await elementToClick.click();
-
-              await storeData(
-                "-",
-                user.user_id,
-                userStatus.success,
-                userStatus.active
-              );
-              successProcess = true;
-              console.log(`${user.user_id} success like`);
+  
+              await storeData("-", user.user_id, userStatus.success, userStatus.active);
+              console.log(`${user.user_id} success like`)
             } else {
-              successProcess = true;
-              throw new Error("Video element not found");
+              console.log("error akun :" , user.user_id)
             }
-          } catch (likeError) {
-            successProcess = true;
-            await storeData(
-              "Failed to like",
-              user.user_id,
-              userStatus.failed,
-              userStatus.inactive
-            );
-          } finally {
-            setTimeout(async () => {
-              await browser.close();
-            }, 3000);
+  
+            setTimeout(async() => {
+              await browser.close()
+            }, 5000);
+            
+          } catch (error) {
+            console.log(error, "error line 102")
+            await browser.close()
           }
-        }
+
+        }, 10000);
+
       } catch (error) {
-        await storeData(
-          "Failed to like",
-          user.user_id,
-          userStatus.failed,
-          userStatus.inactive
-        );
+        await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
         console.error(`Error for user ${user.user_id}:`, error);
       }
     }
 
-    res
-      .status(200)
-      .json(global_response("SUCCESS", 200, { message: "sukses" }));
+    res.status(200).json(global_response("SUCCESS", 200, { message: "sukses" }));
   } catch (error) {
     console.log("Main error:", error);
     res.status(400).json(global_response("FAILED", 400, error.toString()));

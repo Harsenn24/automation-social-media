@@ -1,7 +1,8 @@
 const { QueryTypes } = require("sequelize");
 const sequelize = require("../config/index");
+const limit = `limit 840 offset 256`
 
-async function queryFindUser(active) {
+async function queryFindUser() {
 
     const userActive = await sequelize.query(
         `
@@ -9,12 +10,9 @@ async function queryFindUser(active) {
             u.user_id 
         FROM 
             users u 
-        WHERE
-            u.active = :active;
         `,
         {
             type: QueryTypes.SELECT,
-            replacements: { active: active === "true" ? "1" : "0" }
         }
     );
 
