@@ -1,4 +1,3 @@
-const command_tiktok = require("../controller/tiktok/command")
 const comment_tiktok = require("../controller/tiktok/comment")
 const like_tiktok = require("../controller/tiktok/like")
 const tiktokRouter = require("express").Router()
