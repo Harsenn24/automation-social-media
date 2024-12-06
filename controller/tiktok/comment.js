@@ -39,10 +39,9 @@ async function processTask(user, link) {
 
     let successProcess = false;
 
-    while (!successProcess) {
+    setTimeout(async () => {
       try {
         await page.keyboard.press("PageDown", { delay: 3000 });
-
         const element_comment = 'div[data-e2e="comment-text"]';
         await page.waitForSelector(element_comment, { timeout: 60000 });
 
@@ -55,21 +54,46 @@ async function processTask(user, link) {
         await storeData("-", user.user_id, userStatus.success, userStatus.active);
         successProcess = true;
         console.log(`${user.user_id} success comment`);
-      } catch (commentError) {
-        console.error(`Comment failed for user ${user.user_id}:`, commentError);
-        await storeData(
-          "Failed to comment",
-          user.user_id,
-          userStatus.failed,
-          userStatus.inactive
-        );
-        break; // Exit loop on failure
-      }
-    }
 
-    setTimeout(async () => {
-        await browser.close();
-    }, 10000)
+        setTimeout(async() => {
+          await browser.close()
+        }, 5000);
+
+      } catch (error) {
+        console.log(error)
+        await browser.close()
+      }
+    }, 10000);
+
+    // while (!successProcess) {
+    //   try {
+    //     await page.keyboard.press("PageDown", { delay: 3000 });
+
+    //     const element_comment = 'div[data-e2e="comment-text"]';
+    //     await page.waitForSelector(element_comment, { timeout: 60000 });
+
+    //     const randomIndex = Math.floor(
+    //       Math.random() * commentJson.comments.length
+    //     );
+    //     await page.type(element_comment, commentJson.comments[randomIndex]);
+    //     await page.keyboard.press("Enter");
+
+    //     await storeData("-", user.user_id, userStatus.success, userStatus.active);
+    //     successProcess = true;
+    //     console.log(`${user.user_id} success comment`);
+    //   } catch (commentError) {
+    //     console.error(`Comment failed for user ${user.user_id}:`, commentError);
+    //     await storeData(
+    //       "Failed to comment",
+    //       user.user_id,
+    //       userStatus.failed,
+    //       userStatus.inactive
+    //     );
+    //     break; // Exit loop on failure
+    //   }
+    // }
+
+    
   } catch (userError) {
     console.error(`Error processing user ${user.user_id}:`, userError);
     await storeData(
@@ -84,7 +108,7 @@ async function processTask(user, link) {
 
 async function processQueue(users, link) {
   for (const user of users) {
-    await processTask(user, link); 
+    await processTask(user, link);
   }
 }
 
