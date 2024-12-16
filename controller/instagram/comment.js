@@ -20,7 +20,7 @@ async function processTask(user, link) {
         userStatus.failed,
         userStatus.inactive
       );
-      return;
+      return; 
     }
 
     browser = await puppeteer.connect({
@@ -41,14 +41,16 @@ async function processTask(user, link) {
 
     setTimeout(async () => {
       try {
-        await page.keyboard.press("PageDown", { delay: 3000 });
-        const element_comment = 'div[data-e2e="comment-text"]';
-        await page.waitForSelector(element_comment, { timeout: 60000 });
+        const textareaSelector = 'textarea[aria-label="Tambahkan komentar…"]';
+        await page.waitForSelector(textareaSelector, { visible: true });
 
         const randomIndex = Math.floor(
           Math.random() * commentJson.comments.length
         );
-        await page.type(element_comment, commentJson.comments[randomIndex]);
+
+        await page.focus(textareaSelector);
+
+        await page.type(textareaSelector, commentJson.comments[randomIndex]);
         await page.keyboard.press("Enter");
 
         await storeData("-", user.user_id, userStatus.success, userStatus.active);
@@ -84,11 +86,12 @@ async function processQueue(users, link) {
   }
 }
 
-async function comment_tiktok(req, res) {
+async function comment_instagram(req, res) {
   try {
     const { link, active } = req.body;
+    
     const findUsers = await queryFindUser(active);
-
+   
     await processQueue(findUsers, link);
 
     res
@@ -100,4 +103,4 @@ async function comment_tiktok(req, res) {
   }
 }
 
-module.exports = comment_tiktok 
+module.exports = comment_instagram 
