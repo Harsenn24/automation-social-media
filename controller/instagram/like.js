@@ -5,7 +5,7 @@ const storeData = require("../../helpers/store-data-success-error.helper");
 const userStatus = require("../../enums/user-status.enum");
 const queryFindUser = require("../../helpers/query-find-user.helper");
 
-async function like_tiktok(req, res) {
+async function like_instagram(req, res) {
   try {
     const { link } = req.body;
 
@@ -15,7 +15,7 @@ async function like_tiktok(req, res) {
       let browser
       try {
         const puppeteerLink = await openBrowser(user.user_id);
-
+  
         if (puppeteerLink.user_id) {
           await storeData(
             puppeteerLink.message,
@@ -23,18 +23,17 @@ async function like_tiktok(req, res) {
             userStatus.failed,
             userStatus.inactive
           );
-          
         }
-
+  
         browser = await puppeteer.connect({
           browserWSEndpoint: puppeteerLink,
           defaultViewport: null,
         });
-
+  
         const pages = await browser.pages();
-
+  
         let page;
-
+  
         if (pages.length > 1) {
           for (let i = 1; i < pages.length; i++) {
             await pages[i].close();
@@ -43,42 +42,43 @@ async function like_tiktok(req, res) {
         } else {
           page = await browser.newPage();
         }
-
+  
         await page.goto(link, { waitUntil: "networkidle2", timeout: 60000 });
-
+  
         setTimeout(async () => {
           try {
-            await page.reload()
-            const videoElement = await page.waitForSelector("video", { timeout: 10000 });
-  
+            await page.reload();
+
+            const svgSelector = 'svg.x1lliihq.x1n2onr6.xyb1xck';
+    
+            const videoElement = await page.waitForSelector(svgSelector, { visible : true });
+    
             if (videoElement) {
-              const elementToClick = await page.$("video");
-  
-              await elementToClick.click();
-              await elementToClick.click();
-  
+    
+              await page.click(svgSelector)
+    
               await storeData("-", user.user_id, userStatus.success, userStatus.active);
-              console.log(`${user.user_id} success like`)
             } else {
-              console.log("error akun :" , user.user_id)
+              console.log("error akun :", user.user_id)
+              await browser.close()
             }
-  
+    
             setTimeout(async() => {
               await browser.close()
             }, 5000);
-            
+    
           } catch (error) {
             console.log(error, "error line 102")
             await browser.close()
-          }
-
+          } 
         }, 10000);
-
+        
       } catch (error) {
         await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
         console.error(`Error for user ${user.user_id}:`, error);
         await browser.close()
       }
+
     }
 
     res.status(200).json(global_response("SUCCESS", 200, { message: "sukses" }));
@@ -88,4 +88,4 @@ async function like_tiktok(req, res) {
   }
 }
 
-module.exports = like_tiktok;
+module.exports = like_instagram;
