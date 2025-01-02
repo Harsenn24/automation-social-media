@@ -12,7 +12,7 @@ async function like_instagram(req, res) {
     const findUsers = await queryFindUser();
 
     for (const user of findUsers) {
-      let browser
+      let browser = null
       try {
         const puppeteerLink = await openBrowser(user.user_id);
   
@@ -76,7 +76,9 @@ async function like_instagram(req, res) {
       } catch (error) {
         await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
         console.error(`Error for user ${user.user_id}:`, error);
-        await browser.close()
+        if(browser) {
+          await browser.close()
+        }
       }
 
     }
