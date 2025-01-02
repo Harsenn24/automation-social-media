@@ -9,13 +9,7 @@ async function like_instagram(req, res) {
   try {
     const { link } = req.body;
 
-    // const findUsers = await queryFindUser();
-    const findUsers = [
-      {
-        user_id : "knao28f"
-      }
-    ]
-
+    const findUsers = await queryFindUser();
 
     for (const user of findUsers) {
       let browser = null
@@ -83,7 +77,7 @@ async function like_instagram(req, res) {
         await storeData("Failed to like", user.user_id, userStatus.failed, userStatus.inactive);
         console.error(`Error for user ${user.user_id}:`, error);
         if(browser) {
-
+          await browser.close()
         }
       }
 

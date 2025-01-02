@@ -9,7 +9,7 @@ const openBrowser = require("../../helpers/open-browser.helper");
 const commentJson = JSON.parse(fs.readFileSync("./json/comment.json"));
 
 async function processTask(user, link) {
-  let browser
+  let browser = null
   try {
     const puppeteerLink = await openBrowser(user.user_id);
 
@@ -63,7 +63,9 @@ async function processTask(user, link) {
 
       } catch (error) {
         console.log(error)
-        await browser.close()
+        if(browser) {
+          await browser.close()
+        }
       }
     }, 10000);
     
