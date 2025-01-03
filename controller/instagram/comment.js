@@ -77,7 +77,9 @@ async function processTask(user, link) {
       userStatus.failed,
       userStatus.inactive
     );
-    await browser.close()
+    if(browser) {
+      await browser.close()
+    }
   }
 }
 
