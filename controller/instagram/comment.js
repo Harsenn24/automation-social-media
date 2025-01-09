@@ -35,7 +35,7 @@ async function processTask(user, link) {
       await pages[i].close();
     }
 
-    await page.goto(link, { waitUntil: "networkidle2", timeout: 60000 });
+    await page.goto(link, {  timeout: 60000 });
 
     let successProcess = false;
 
