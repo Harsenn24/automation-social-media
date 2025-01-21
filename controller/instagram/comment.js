@@ -41,7 +41,7 @@ async function processTask(user, link) {
 
     setTimeout(async () => {
       try {
-        const textareaSelector = 'textarea[aria-label="Tambahkan komentar…"]';
+        const textareaSelector = 'textarea[aria-label';
         await page.waitForSelector(textareaSelector, { visible: true });
 
         const randomIndex = Math.floor(
