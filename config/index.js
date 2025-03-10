@@ -4,7 +4,7 @@ const config = {
     dbHost: '127.0.0.1',
     dbUser: 'root',
     dbName: 'user_id_adspower',
-    dbPassword: null,
+    dbPassword: process.env.NDOE_DB_PASSWORD || null,
     dbPort: process.env.DB_PORT || 4306,
     dbDialect: "mysql",
     pool: {
@@ -21,7 +21,7 @@ const dbSosmed = new Sequelize(config.dbName, config.dbUser, config.dbPassword, 
     omitNull: true,
     pool: config.pool,
     timezone: '+00:00',
-    port : config.dbPort
+    port: config.dbPort
 });
 
 module.exports = dbSosmed;
