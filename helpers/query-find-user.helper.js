@@ -10,6 +10,8 @@ async function queryFindUser() {
             u.user_id 
         FROM 
             users u 
+        ORDER by u.id
+        DESC
         `,
         {
             type: QueryTypes.SELECT,
