@@ -1,12 +1,12 @@
 const Sequelize = require("sequelize");
 
 const config = {
-    dbHost: process.env.NODE_DB_HOST || '127.0.0.1',
-    dbUser: process.env.NODE_DB_USER || 'root',
-    dbName: process.env.NODE_DB_DATABASE || 'user_id_adspower',
-    dbPassword: process.env.NODE_DB_PASSWORD,
-    dbPort: process.env.NODE_DB_PORT,
-    dbDialect: process.env.NODE_DB_DIALECT || "mysql",
+    dbHost: '127.0.0.1',
+    dbUser: 'root',
+    dbName: 'user_id_adspower',
+    dbPassword: null,
+    dbPort: process.env.DB_PORT || 4306,
+    dbDialect: "mysql",
     pool: {
         max: process.env.NODE_DB_POOL_MAX ? +process.env.NODE_DB_POOL_MAX : 10,
         min: process.env.NODE_DB_POOL_MIN ? +process.env.NODE_DB_POOL_MIN : 0,
@@ -20,7 +20,8 @@ const dbSosmed = new Sequelize(config.dbName, config.dbUser, config.dbPassword, 
     logging: false,
     omitNull: true,
     pool: config.pool,
-    timezone: '+00:00'
+    timezone: '+00:00',
+    port : config.dbPort
 });
 
 module.exports = dbSosmed;
