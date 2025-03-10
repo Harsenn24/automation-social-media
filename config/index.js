@@ -4,7 +4,7 @@ const config = {
     dbHost: '127.0.0.1',
     dbUser: 'root',
     dbName: 'user_id_adspower',
-    dbPassword: process.env.NDOE_DB_PASSWORD || null,
+    dbPassword: process.env.NODE_DB_PASSWORD || null,
     dbPort: process.env.DB_PORT || 4306,
     dbDialect: "mysql",
     pool: {
