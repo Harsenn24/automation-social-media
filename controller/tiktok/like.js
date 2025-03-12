@@ -44,19 +44,16 @@ async function like_tiktok(req, res) {
           page = await browser.newPage();
         }
 
-        await page.goto(link, { waitUntil: "networkidle2"});
+        await page.goto(link, { waitUntil: "networkidle2" });
 
         setTimeout(async () => {
           try {
-            const loginElements = ['div.TUXButton-label', 'button[data-e2e="nav-login-button"]']
+            const loginWords = 'Log in'
+            const loginWordsCheck = await page.$x(`//div[contains(text(), '${loginWords}')]`);
 
-            for(const loginElement of loginElements ){
-              const elementLogin = await page.$(loginElement)
-  
-              if (elementLogin) {
-                const error_message = `akun tiktok ${user.user_id} belum login`
-                throw (error_message)
-              }
+            if (loginWordsCheck) {
+              const error_message = `akun instagram ${user.user_id} tidak login`
+              throw (error_message)
             }
 
             const videoElement = await page.waitForSelector("video", { timeout: 10000 });
