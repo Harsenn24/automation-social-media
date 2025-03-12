@@ -35,14 +35,22 @@ async function processTask(user, link) {
       await pages[i].close();
     }
 
-    await page.goto(link, { waitUntil: "networkidle2", timeout: 60000 });
+    await page.goto(link, { waitUntil: "networkidle2"});
 
     let successProcess = false;
 
     setTimeout(async () => {
       try {
-        await page.keyboard.press("PageDown", { delay: 3000 });
+        await page.keyboard.press("PageDown");
         const element_comment = 'div[data-e2e="comment-text"]';
+
+        const element_comment_exists = await page.$(element_comment);
+        
+        if(!element_comment_exists){
+          const error_message = `akun tiktok ${user.user_id} belum login / proxy bukan bahasa inggris`
+          throw(error_message)
+        }
+
         await page.waitForSelector(element_comment, { timeout: 60000 });
 
         const randomIndex = Math.floor(

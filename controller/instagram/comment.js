@@ -20,7 +20,7 @@ async function processTask(user, link) {
         userStatus.failed,
         userStatus.inactive
       );
-      return; 
+      return;
     }
 
     browser = await puppeteer.connect({
@@ -35,12 +35,29 @@ async function processTask(user, link) {
       await pages[i].close();
     }
 
-    await page.goto(link, {  timeout: 60000 });
+    await page.goto(link, { timeout: 60000 });
 
     let successProcess = false;
 
     setTimeout(async () => {
       try {
+        const suspendedElement = 'div[data-bloks-name]'
+        const suspendedElementCheck = await page.$(suspendedElement)
+
+        if (suspendedElementCheck) {
+          const error_message = `akun instagram ${user.user_id} sedang di suspen`
+          throw (error_message)
+        }
+
+        const loginWords = 'Log in'
+        const loginWordsCheck = await page.$x(`//div[contains(text(), '${loginWords}')]`);
+
+        if (loginWordsCheck) {
+          const error_message = `akun instagram ${user.user_id} tidak login`
+          throw (error_message)
+        }
+
+
         const textareaSelector = 'textarea[aria-label';
         await page.waitForSelector(textareaSelector, { visible: true });
 
@@ -57,18 +74,18 @@ async function processTask(user, link) {
         successProcess = true;
         console.log(`${user.user_id} success comment`);
 
-        setTimeout(async() => {
+        setTimeout(async () => {
           await browser.close()
         }, 5000);
 
       } catch (error) {
         console.log(error)
-        if(browser) {
+        if (browser) {
           await browser.close()
         }
       }
     }, 10000);
-    
+
   } catch (userError) {
     console.error(`Error processing user ${user.user_id}:`, userError);
     await storeData(
@@ -77,7 +94,7 @@ async function processTask(user, link) {
       userStatus.failed,
       userStatus.inactive
     );
-    if(browser) {
+    if (browser) {
       await browser.close()
     }
   }
@@ -93,9 +110,9 @@ async function processQueue(users, link) {
 async function comment_instagram(req, res) {
   try {
     const { link, active } = req.body;
-    
+
     const findUsers = await queryFindUser(active);
-   
+
     await processQueue(findUsers, link);
 
     res
