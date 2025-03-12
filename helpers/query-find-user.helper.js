@@ -18,6 +18,7 @@ async function queryFindUser() {
         }
     );
 
+
     return userActive
 
 }
