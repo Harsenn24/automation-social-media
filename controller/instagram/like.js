@@ -49,6 +49,22 @@ async function like_instagram(req, res) {
           try {
             await page.reload();
 
+            const suspendedElement = 'div[data-bloks-name]'
+            const suspendedElementCheck = await page.$(suspendedElement)
+    
+            if (suspendedElementCheck) {
+              const error_message = `akun instagram ${user.user_id} sedang di suspen`
+              throw (error_message)
+            }
+    
+            const loginWords = 'Log in'
+            const loginWordsCheck = await page.$x(`//div[contains(text(), '${loginWords}')]`);
+    
+            if (loginWordsCheck) {
+              const error_message = `akun instagram ${user.user_id} tidak login`
+              throw (error_message)
+            }
+
             const svgSelector = 'svg.x1lliihq.x1n2onr6.xyb1xck';
     
             const videoElement = await page.waitForSelector(svgSelector, { visible : true });
@@ -68,7 +84,7 @@ async function like_instagram(req, res) {
             }, 5000);
     
           } catch (error) {
-            console.log(error, "error line 102")
+            console.log(error)
             await browser.close()
           } 
         }, 10000);
