@@ -18,11 +18,6 @@ async function queryFindUser() {
         }
     );
 
-    return [
-        {
-            user_id : "ku7dido"
-        }
-    ]
 
     return userActive
 
