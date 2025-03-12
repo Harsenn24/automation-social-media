@@ -23,7 +23,7 @@ async function like_tiktok(req, res) {
             userStatus.failed,
             userStatus.inactive
           );
-          
+
         }
 
         browser = await puppeteer.connect({
@@ -44,31 +44,41 @@ async function like_tiktok(req, res) {
           page = await browser.newPage();
         }
 
-        await page.goto(link, { waitUntil: "networkidle2", timeout: 60000 });
+        await page.goto(link, { waitUntil: "networkidle2"});
 
         setTimeout(async () => {
           try {
-            await page.reload()
-            const videoElement = await page.waitForSelector("video", { timeout: 10000 });
+            const loginElements = ['div.TUXButton-label', 'button[data-e2e="nav-login-button"]']
+
+            for(const loginElement of loginElements ){
+              const elementLogin = await page.$(loginElement)
   
+              if (elementLogin) {
+                const error_message = `akun tiktok ${user.user_id} belum login`
+                throw (error_message)
+              }
+            }
+
+            const videoElement = await page.waitForSelector("video", { timeout: 10000 });
+
             if (videoElement) {
               const elementToClick = await page.$("video");
-  
+
               await elementToClick.click();
               await elementToClick.click();
-  
+
               await storeData("-", user.user_id, userStatus.success, userStatus.active);
               console.log(`${user.user_id} success like`)
             } else {
-              console.log("error akun :" , user.user_id)
+              console.log("error akun :", user.user_id)
             }
-  
-            setTimeout(async() => {
+
+            setTimeout(async () => {
               await browser.close()
             }, 5000);
-            
+
           } catch (error) {
-            console.log(error, "error line 102")
+            console.log(error)
             await browser.close()
           }
 
