@@ -37,29 +37,14 @@ async function processTask(user, link) {
 
     await page.goto(link, { timeout: 60000 });
 
-    let successProcess = false;
-
     setTimeout(async () => {
       try {
-        const suspendedElement = 'div[data-bloks-name]'
-        const suspendedElementCheck = await page.$(suspendedElement)
-
-        if (suspendedElementCheck) {
-          const error_message = `akun instagram ${user.user_id} sedang di suspen`
-          throw (error_message)
-        }
-
-        const loginWords = 'Log in'
-        const loginWordsCheck = await page.$x(`//div[contains(text(), '${loginWords}')]`);
-
-        if (loginWordsCheck) {
-          const error_message = `akun instagram ${user.user_id} tidak login`
-          throw (error_message)
-        }
-
-
         const textareaSelector = 'textarea[aria-label';
-        await page.waitForSelector(textareaSelector, { visible: true });
+        const selector_commant_avail = await page.waitForSelector(textareaSelector, { visible: true });
+        if(!selector_commant_avail){
+          const error_message = `account ${user.user_id} : ERROR PROXY`
+          throw (error_message)
+        }
 
         const randomIndex = Math.floor(
           Math.random() * commentJson.comments.length

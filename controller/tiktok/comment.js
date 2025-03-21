@@ -35,35 +35,30 @@ async function processTask(user, link) {
       await pages[i].close();
     }
 
-    await page.goto(link, { waitUntil: "networkidle2"});
-
-    let successProcess = false;
+    await page.goto(link, { waitUntil: "networkidle2" });
 
     setTimeout(async () => {
       try {
-        await page.keyboard.press("PageDown");
-        const element_comment = 'div[data-e2e="comment-text"]';
+        await page.click('span[data-e2e="comment-icon"]')
 
-        const element_comment_exists = await page.$(element_comment);
-        
-        if(!element_comment_exists){
-          const error_message = `akun tiktok ${user.user_id} belum login / proxy bukan bahasa inggris`
-          throw(error_message)
+        const comment_text_box = await page.waitForSelector('div[data-e2e="comment-text"]', { visible: true });
+
+        if (!comment_text_box) {
+          const error_message = `account tiktok ${user.user_id} : ERROR NETWORK OR PROXY `
+          throw (error_message)
         }
-
-        await page.waitForSelector(element_comment, { timeout: 60000 });
 
         const randomIndex = Math.floor(
           Math.random() * commentJson.comments.length
         );
-        await page.type(element_comment, commentJson.comments[randomIndex]);
+
+        await page.type('div[data-e2e="comment-text"]', commentJson.comments[randomIndex]);
         await page.keyboard.press("Enter");
 
         await storeData("-", user.user_id, userStatus.success, userStatus.active);
-        successProcess = true;
         console.log(`${user.user_id} success comment`);
 
-        setTimeout(async() => {
+        setTimeout(async () => {
           await browser.close()
         }, 5000);
 
@@ -72,7 +67,7 @@ async function processTask(user, link) {
         await browser.close()
       }
     }, 10000);
-    
+
   } catch (userError) {
     console.error(`Error processing user ${user.user_id}:`, userError);
     await storeData(
@@ -81,7 +76,7 @@ async function processTask(user, link) {
       userStatus.failed,
       userStatus.inactive
     );
-    await browser.close()
+    //await browser.close()
   }
 }
 
