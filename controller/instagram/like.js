@@ -47,23 +47,6 @@ async function like_instagram(req, res) {
   
         setTimeout(async () => {
           try {
-            await page.reload();
-
-            const suspendedElement = 'div[data-bloks-name]'
-            const suspendedElementCheck = await page.$(suspendedElement)
-    
-            if (suspendedElementCheck) {
-              const error_message = `akun instagram ${user.user_id} sedang di suspen`
-              throw (error_message)
-            }
-    
-            const loginWords = 'Log in'
-            const loginWordsCheck = await page.$x(`//div[contains(text(), '${loginWords}')]`);
-    
-            if (loginWordsCheck) {
-              const error_message = `akun instagram ${user.user_id} tidak login`
-              throw (error_message)
-            }
 
             const svgSelector = 'svg.x1lliihq.x1n2onr6.xyb1xck';
     
@@ -72,6 +55,7 @@ async function like_instagram(req, res) {
             if (videoElement) {
     
               await page.click(svgSelector)
+
     
               await storeData("-", user.user_id, userStatus.success, userStatus.active);
             } else {
